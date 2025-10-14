@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Data Viewer</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom styles for modern appearance and transitions */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .card {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .input-style {
+            transition: all 0.2s;
+        }
+        .input-style:focus {
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.4);
+            border-color: #4f46e5;
+        }
+
+        /* Base transition class for content sections */
+        .transition-container {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        
+        /* Interactive Link Button Style */
+        .link-button {
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, background-color 0.15s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        .link-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        .link-button:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        /* General Button Active State */
+        button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8 flex items-center justify-center">
+
+    <div class="w-full max-w-5xl bg-white p-6 sm:p-10 rounded-xl card space-y-8">
+        
+        <!-- Header -->
+        <header class="text-center">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700 flex items-center justify-center space-x-2">
+                <i data-lucide="graduation-cap" class="w-8 h-8"></i>
+                <span>Student Lab Viewer Portal</span>
+            </h1>
+            <p class="text-center text-gray-500 mt-2">
+                Fetch student profile and course documents from the repository.
+            </p>
+        </header>
+
+        <!-- Step 1: Initial Input and Action Section (Always visible) -->
+        <div id="initialInputGroup" class="grid grid-cols-1 sm:grid-cols-6 gap-4">
+            
+            <!-- Roll Number Input (3/6 width on desktop) -->
+            <input type="text" id="rollNumberInput" placeholder="Enter Roll Number"
+                   class="col-span-full sm:col-span-3 p-3 border-2 border-indigo-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-lg font-mono uppercase tracking-wider input-style"
+                   maxlength="10" />
+            
+            <!-- Semester Select (2/6 width on desktop) -->
+            <select id="semesterSelect" 
+                    class="col-span-full sm:col-span-2 p-3 border-2 border-indigo-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-lg input-style">
+                <option value="">-- Select Semester --</option>
+                <option value="SEM1">SEM 1</option>
+                <option value="SEM2">SEM 2</option>
+                <option value="SEM3">SEM 3</option>
+                <option value="SEM4">SEM 4</option>
+                <option value="SEM5">SEM 5</option>
+                <option value="SEM6">SEM 6</option>
+                <option value="SEM7">SEM 7</option>
+                <option value="SEM8">SEM 8</option>
+            </select>
+            
+            <!-- Button (1/6 width on desktop) -->
+            <button id="viewButton" onclick="fetchStudentProfile()"
+                    class="col-span-full sm:col-span-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-300 ease-in-out shadow-lg shadow-indigo-300 transform hover:scale-[1.01] active:scale-95 flex items-center justify-center space-x-2">
+                <i data-lucide="user" class="w-5 h-5"></i>
+                <span id="buttonText">Fetch Profile</span>
+            </button>
+        </div>
+        
+        <!-- Status Message Box -->
+        <div id="statusMessage" class="hidden p-3 rounded-lg text-center text-sm font-medium transition-all duration-300">
+            <!-- Dynamic status messages will appear here -->
+        </div>
+
+        <!-- Backtracking Control Row (Visible when data is fetched) -->
+        <div id="backtrackControl" class="pt-4 pb-2 hidden transition-container opacity-0 translate-y-4">
+            <button onclick="resetToStep1()" 
+                    class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center space-x-1 p-2 rounded-lg transition duration-200 active:scale-95">
+                <i data-lucide="arrow-left-circle" class="w-4 h-4"></i>
+                <span>Change Profile/Semester</span>
+            </button>
+        </div>
+
+
+        <!-- Display Area (Step 2 and 3) -->
+        <!-- Added transition and initial hidden state classes -->
+        <div id="dataContainer" class="hidden grid grid-cols-1 md:grid-cols-3 gap-8 pt-0 transition-container opacity-0 translate-y-4">
+
+            <!-- Profile Photo Section (1/3 width on desktop) -->
+            <div class="md:col-span-1 p-6 bg-indigo-50 rounded-xl border border-indigo-200 space-y-4">
+                <h2 class="text-xl font-bold text-indigo-700 border-b pb-2 flex items-center space-x-2">
+                    <i data-lucide="user-circle-2" class="w-6 h-6"></i>
+                    <span>Student Profile</span>
+                </h2>
+                <div class="flex justify-center">
+                    <img id="profileImage" src="https://placehold.co/200x200/a3a3a3/ffffff?text=Enter+Roll+No" alt="Student Profile Photo"
+                         class="w-48 h-48 object-cover rounded-full border-4 border-indigo-400 cursor-pointer transition duration-300 transform hover:scale-105 active:scale-95"
+                         onclick="checkMissingFileStatus()">
+                </div>
+                <p id="imageStatus" class="text-center text-sm text-gray-500">
+                    If photo fails to load, it is missing in the repository.
+                </p>
+            </div>
+
+            <!-- Workbook Control Panel / Lab Work Section (2/3 width on desktop) -->
+            <div class="md:col-span-2 p-6 bg-gray-50 rounded-xl border border-gray-200 space-y-4">
+                
+                <!-- NEW BLOCK: General Documents (SSC, etc.) -->
+                <div id="generalDocsGroup" class="space-y-4">
+                    <h2 class="text-xl font-bold text-gray-700 border-b pb-2">
+                        <i data-lucide="folder-open" class="w-6 h-6 inline-block mr-2 text-indigo-500"></i>
+                        General Documents
+                    </h2>
+                    <p class="text-md text-gray-600 font-medium">
+                        Click to view common student documents (opens in new tab).
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="viewGeneralDocument('SSC')"
+                                class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-md shadow-yellow-300 transform hover:scale-[1.02] active:scale-95 flex items-center space-x-2 text-sm">
+                            <i data-lucide="certificate" class="w-4 h-4"></i>
+                            <span>SSC Certificate</span>
+                        </button>
+                        <button onclick="viewGeneralDocument('INTER')"
+                                class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-md shadow-cyan-300 transform hover:scale-[1.02] active:scale-95 flex items-center space-x-2 text-sm">
+                            <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                            <span>INTER Certificate</span>
+                        </button>
+                        <!-- Future document buttons can be added here -->
+                    </div>
+                </div>
+                
+                <!-- Separator -->
+                <hr class="my-4 border-gray-300" /> 
+
+                <!-- Step 2: Course Code Input and Button -->
+                <!-- Added transition and initial hidden state classes -->
+                <div id="courseCodeInputGroup" class="space-y-4 hidden transition-container opacity-0 translate-y-4">
+                    <h2 class="text-xl font-bold text-gray-700 border-b pb-2">
+                        <i data-lucide="book-open" class="w-6 h-6 inline-block mr-2 text-indigo-500"></i>
+                        Enter Course Code to Load Workbooks
+                    </h2>
+                    <p id="contextMessage" class="text-md text-gray-600 font-medium">
+                        Enter the Course Code for the currently selected semester.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <!-- Course Code Input -->
+                        <input type="text" id="subjectCodeInput" placeholder="Enter Course Code"
+                               class="w-full sm:w-2/3 p-3 border-2 border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 text-lg font-mono uppercase tracking-wider input-style"
+                               maxlength="10" />
+                        <!-- Button to Fetch Workbooks -->
+                        <button id="fetchWorkbooksButton" onclick="fetchWorkbooks()"
+                                class="w-full sm:w-1/3 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-300 shadow-md shadow-green-300 transform hover:scale-[1.02] active:scale-95 flex items-center justify-center space-x-2">
+                            <i data-lucide="file-check" class="w-5 h-5"></i>
+                            <span>Fetch Workbooks</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Lab Work Display (Initially hidden) -->
+                <!-- Added transition and initial hidden state classes -->
+                <div id="labWorkSection" class="space-y-4 hidden transition-container opacity-0 translate-y-4">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <h2 class="text-xl font-bold text-gray-700" id="labWorkTitle">
+                            <i data-lucide="book-open-text" class="w-6 h-6 inline-block mr-2"></i>
+                            10 Weeks of Lab Work
+                        </h2>
+                        <button onclick="resetToStep2()" class="text-sm text-gray-500 hover:text-indigo-600 font-medium flex items-center space-x-1 transition duration-200 active:scale-95">
+                            <i data-lucide="undo" class="w-4 h-4"></i>
+                            <span>Change Course</span>
+                        </button>
+                    </div>
+                    
+                    <div id="labWorkList" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
+                        <!-- Dynamic lab work links will be inserted here -->
+                    </div>
+                    <p class="text-center text-xs text-gray-500 pt-2">
+                        **Troubleshooting Tip:** Hover over a button to see the full S3 URL being used.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Initialization of Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+
+    <script>
+        // --- CONFIGURATION ---
+        const S3_BUCKET_BASE = 'https://iare-data.s3.ap-south-1.amazonaws.com/uploads/STUDENTS/';
+        const PROFILE_FILE_EXT = 'jpg';
+        const LAB_WORK_FILE_EXT = 'pdf';
+        
+        // NEW CONFIGURATION FOR GENERAL DOCUMENTS
+        const DOCS_PATH = 'DOCS/'; 
+        const DOC_FILE_EXT = 'jpg';
+        // -----------------------
+
+        const rollNumberInput = document.getElementById('rollNumberInput');
+        const semesterSelect = document.getElementById('semesterSelect');
+        const subjectCodeInput = document.getElementById('subjectCodeInput'); 
+        
+        const profileImage = document.getElementById('profileImage');
+        const labWorkList = document.getElementById('labWorkList');
+        const dataContainer = document.getElementById('dataContainer');
+        const courseCodeInputGroup = document.getElementById('courseCodeInputGroup');
+        const labWorkSection = document.getElementById('labWorkSection');
+        const backtrackControl = document.getElementById('backtrackControl');
+        
+        const statusMessage = document.getElementById('statusMessage');
+        const labWorkTitle = document.getElementById('labWorkTitle');
+        const contextMessage = document.getElementById('contextMessage');
+        const defaultProfilePlaceholder = 'https://placehold.co/200x200/a3a3a3/ffffff?text=No+Photo';
+        
+        let currentProfileUrl = ''; 
+        let currentStudentData = {}; // Global object to hold rollNumber and semesterCode
+
+        // --- STATE MANAGEMENT FUNCTIONS ---
+
+        /**
+         * Resets the entire application state and shows Step 1 inputs (with fade out animation).
+         */
+        function resetToStep1() {
+            // Apply fade-out classes to the main content container
+            dataContainer.classList.add('opacity-0', 'translate-y-4');
+            backtrackControl.classList.add('opacity-0', 'translate-y-4');
+
+            setTimeout(() => {
+                // After animation, apply 'hidden' and reset state
+                labWorkList.innerHTML = '';
+                profileImage.src = defaultProfilePlaceholder;
+                profileImage.classList.remove('border-red-500', 'border-dashed');
+                currentProfileUrl = '';
+                profileImage.onerror = handleImageError;
+
+                dataContainer.classList.add('hidden');
+                courseCodeInputGroup.classList.add('hidden');
+                labWorkSection.classList.add('hidden');
+                backtrackControl.classList.add('hidden');
+
+                // Ensure the elements are ready for the next fade-in
+                dataContainer.classList.remove('translate-y-4');
+                backtrackControl.classList.remove('translate-y-4');
+                
+                showStatus('Please enter the Roll Number and Semester to begin.', 'info');
+            }, 300); // Match CSS transition duration
+        }
+
+        /**
+         * Shows Step 2: Profile is loaded, prompts for Course Code (with fade in animation).
+         */
+        function showStep2() {
+            // Setup for course code input group fade-in
+            courseCodeInputGroup.classList.remove('hidden');
+            courseCodeInputGroup.classList.add('opacity-0', 'translate-y-4');
+            labWorkSection.classList.add('hidden', 'opacity-0', 'translate-y-4');
+            backtrackControl.classList.remove('hidden');
+
+            // Trigger the fade-in animation
+            setTimeout(() => {
+                courseCodeInputGroup.classList.remove('opacity-0', 'translate-y-4');
+                backtrackControl.classList.remove('opacity-0', 'translate-y-4');
+            }, 10); // Small delay to ensure transition is applied
+
+            
+            const { rollNumber, semesterCode } = currentStudentData;
+            contextMessage.innerHTML = `Profile successfully fetched for <span class="font-semibold">${rollNumber}</span> in <span class="font-semibold">${semesterCode}</span>. Now, enter the Course Code below to load the lab documents.`;
+            showStatus(`Profile loaded! Proceed to enter the Course Code for ${semesterCode}.`, 'info');
+        }
+
+        /**
+         * Shows Step 3: Lab work links are displayed (with fade in animation).
+         */
+        function showStep3(subjectCode) {
+            // Setup lab work section for fade-in
+            labWorkSection.classList.remove('hidden');
+            labWorkSection.classList.add('opacity-0', 'translate-y-4');
+            courseCodeInputGroup.classList.add('hidden', 'opacity-0', 'translate-y-4');
+            backtrackControl.classList.remove('hidden');
+            
+            // Trigger the fade-in animation
+            setTimeout(() => {
+                labWorkSection.classList.remove('opacity-0', 'translate-y-4');
+            }, 10); // Small delay to ensure transition is applied
+
+
+            showStatus(`Workbooks loaded! Now displaying 10 weeks of lab links for course ${subjectCode}.`, 'info');
+        }
+
+        /**
+         * Resets the view to Step 2 (Course Code input) without changing Roll Number/Semester (with transition).
+         */
+        function resetToStep2() {
+            // Apply fade-out to lab section
+            labWorkSection.classList.add('opacity-0', 'translate-y-4');
+            
+            setTimeout(() => {
+                labWorkSection.classList.add('hidden');
+                // Clear the subject code input and display the prompt again
+                subjectCodeInput.value = "";
+                showStep2();
+            }, 300); // Match CSS transition duration
+        }
+
+        // --- UTILITY FUNCTIONS ---
+
+        /**
+         * Displays a temporary status message in the dedicated box.
+         * @param {string} message - The message content.
+         * @param {string} type - 'info' (default), 'error', or 'warning'.
+         */
+        function showStatus(message, type = 'info') {
+            statusMessage.textContent = message;
+            
+            let colorClasses;
+            if (type === 'error') {
+                colorClasses = ['bg-red-100', 'text-red-600'];
+            } else if (type === 'warning') {
+                colorClasses = ['bg-orange-100', 'text-orange-600'];
+            } else {
+                colorClasses = ['bg-blue-100', 'text-blue-600'];
+            }
+            
+            // Remove all existing color/state classes
+            statusMessage.classList.remove('hidden', 'bg-red-100', 'text-red-600', 'bg-blue-100', 'text-blue-600', 'bg-orange-100', 'text-orange-600');
+            
+            // Add new color classes and show the element
+            statusMessage.classList.add(...colorClasses);
+            statusMessage.classList.remove('hidden');
+        }
+
+        /**
+         * Handles the profile image load error.
+         */
+        function handleImageError() {
+            profileImage.src = defaultProfilePlaceholder; 
+            profileImage.classList.add('border-red-500', 'border-dashed'); 
+            profileImage.onerror = null; // Prevent infinite loops
+            showStatus('Profile image failed to load. Click the image to verify the URL in a new tab.', 'error');
+        }
+
+        /**
+         * Provides debugging help if the user clicks the missing profile image.
+         */
+        function checkMissingFileStatus() {
+            if (profileImage.classList.contains('border-red-500')) {
+                 if (currentProfileUrl) {
+                    window.open(currentProfileUrl, '_blank'); 
+                    showStatus('Opening profile URL in a new tab to show the file status from S3. Check for "Key Does Not Exist".', 'info');
+                 }
+            } else {
+                showStatus('Profile image loaded successfully, no issue detected.', 'info');
+            }
+        }
+        
+        /**
+         * Generates and opens the link for general documents (like SSC).
+         * @param {string} docType - The type of document (e.g., 'SSC', 'INTER').
+         */
+        function viewGeneralDocument(docType) {
+            const { rollNumber } = currentStudentData;
+            
+            if (!rollNumber) {
+                showStatus('Please fetch the student profile first.', 'error');
+                return;
+            }
+
+            // Construct the URL: .../STUDENTS/{RollNumber}/DOCS/{RollNumber}_DOCTYPE.jpg
+            const fileName = `${rollNumber}_${docType.toUpperCase()}.${DOC_FILE_EXT}`;
+            const docUrl = `${S3_BUCKET_BASE}${rollNumber}/${DOCS_PATH}${fileName}`;
+
+            window.open(docUrl, '_blank');
+            showStatus(`Opening ${docType} link for ${rollNumber}. Check the new tab.`, 'info');
+        }
+
+        // --- MAIN APPLICATION LOGIC ---
+
+        /**
+         * STEP 1 Logic: Fetch student profile (Roll Number and Semester are confirmed).
+         */
+        function fetchStudentProfile() {
+            const rollNumber = rollNumberInput.value.trim().toUpperCase();
+            const semesterCode = semesterSelect.value;
+            
+            if (rollNumber.length === 0 || semesterCode === "") {
+                showStatus('Please enter your Roll Number AND select a Semester to fetch the profile.', 'error');
+                dataContainer.classList.add('hidden');
+                return;
+            }
+
+            // Reset all content to ensure a fresh animation
+            dataContainer.classList.add('opacity-0');
+            backtrackControl.classList.add('opacity-0');
+
+            setTimeout(() => {
+                // Reset state without hiding dataContainer immediately
+                labWorkList.innerHTML = '';
+                profileImage.src = defaultProfilePlaceholder;
+                profileImage.classList.remove('border-red-500', 'border-dashed');
+                currentProfileUrl = '';
+                profileImage.onerror = handleImageError;
+                
+                // Store data for the next step
+                currentStudentData = { rollNumber, semesterCode };
+
+                // --- 1. Construct Profile URL and Embed Directly ---
+                currentProfileUrl = `${S3_BUCKET_BASE}${rollNumber}/${rollNumber}.${PROFILE_FILE_EXT}`;
+                profileImage.src = currentProfileUrl;
+                
+                dataContainer.classList.remove('hidden'); 
+                
+                // Trigger fade-in
+                setTimeout(() => {
+                    dataContainer.classList.remove('opacity-0');
+                    backtrackControl.classList.remove('opacity-0');
+                }, 10);
+                
+                // --- 2. Advance to Step 2 ---
+                showStep2();
+            }, 10);
+        }
+
+        /**
+         * STEP 2 Logic: Fetch workbooks after receiving the Course Code.
+         */
+        function fetchWorkbooks() {
+            const subjectCode = subjectCodeInput.value.trim().toUpperCase();
+            const { rollNumber, semesterCode } = currentStudentData;
+
+            if (subjectCode === "") {
+                showStatus('Please enter the Course Code before fetching workbooks.', 'error');
+                return;
+            }
+
+            // --- 1. Update Lab Work Title ---
+            labWorkTitle.innerHTML = `<i data-lucide="book-open-text" class="w-6 h-6 inline-block mr-2"></i>10 Weeks of Lab Work (${subjectCode}, ${semesterCode})`;
+            lucide.createIcons();
+
+            // --- 2. Generate and Embed Lab Work Links Directly ---
+            generateLabWorkLinks(rollNumber, subjectCode, semesterCode);
+
+            // --- 3. Advance to Step 3 ---
+            showStep3(subjectCode);
+        }
+
+        /**
+         * Handles the click on a lab link button, providing a warning message.
+         * @param {string} labUrl - The full S3 URL for the lab document.
+         * @param {string} week - The week number.
+         */
+        function handleLabLinkClick(labUrl, week) {
+            // Provide a strong warning before opening the external link
+            showStatus(`Attempting to open Week ${week} link. If the file is missing, the new tab will show an S3 "Key Does Not Exist" error.`, 'warning');
+            
+            // Open the link directly (since we can't reliably check it first)
+            window.open(labUrl, '_blank');
+        }
+
+
+        /**
+         * Generates the links for the 10 weeks of lab work.
+         */
+        function generateLabWorkLinks(rollNumber, subjectCode, semesterCode) {
+            labWorkList.innerHTML = ''; 
+            
+            // Path structure: LAB/{SemesterCode}/ (Uses exact case from working example: LAB/SEM3/)
+            const dynamicSemesterPath = `LAB/${semesterCode}/`; 
+
+            for (let week = 1; week <= 10; week++) {
+                // S3 Path: .../STUDENTS/{RollNumber}/LAB/{SemesterCode}/{SubjectCode}/{RollNumber}_week{week}.pdf
+                const fileName = `${rollNumber}_week${week}.${LAB_WORK_FILE_EXT}`;
+                const labUrl = `${S3_BUCKET_BASE}${rollNumber}/${dynamicSemesterPath}${subjectCode}/${fileName}`;
+
+                const fileContainer = document.createElement('div');
+                // Use a standard button structure that calls the handler function
+                fileContainer.className = 'link-button bg-blue-100 hover:bg-blue-200 text-center rounded-xl p-4 flex flex-col items-center justify-center space-y-1 active:scale-98';
+                fileContainer.title = `Full URL: ${labUrl}`; // Tooltip for debugging
+                fileContainer.setAttribute('onclick', `handleLabLinkClick('${labUrl}', '${week}')`);
+
+                const iconContainer = document.createElement('div');
+                iconContainer.className = 'text-3xl text-indigo-600 mb-1';
+                iconContainer.innerHTML = '<i data-lucide="file-text" class="w-7 h-7"></i>';
+
+                const text = document.createElement('span');
+                text.className = 'font-semibold text-sm text-indigo-800 mt-1 break-all';
+                text.textContent = `Week ${week}`; 
+
+                fileContainer.appendChild(iconContainer);
+                fileContainer.appendChild(text);
+                
+                // No need for the absolute link overlay since the click is handled by the container
+                labWorkList.appendChild(fileContainer);
+            }
+            lucide.createIcons();
+        }
+
+        // Initialize display on load
+        resetToStep1();
+    </script>
+</body>
+</html>
