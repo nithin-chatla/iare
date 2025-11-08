@@ -4,27 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Data Portal</title>
+    <!-- ==================================================================== -->
+    <!-- AD INTEGRATION SCRIPTS - Global/Preload Scripts (STAYS IN HEAD) -->
+    <!-- ==================================================================== -->
     <!-- Google AdSense Account Verification Tag -->
     <meta name="google-adsense-account" content="ca-pub-4693135656555503">
     <!-- Adsterra Ad Script (main file) -->
     <script type='text/javascript' src='//pl28010937.effectivegatecpm.com/98/af/00/98af00b47d4c8002deb94f9193db79c7.js'></script>
     
-    <!-- New Ad Script (High Performance Format - requires separate body placement) -->
-    <script type="text/javascript">
-	atOptions = {
-		'key' : '2ca3c18e46200bae5a4b71354503e56b',
-		'format' : 'iframe',
-		'height' : 300,
-		'width' : 160,
-		'params' : {}
-	};
-    </script>
-    <!-- NOTE: The second part of this ad script must be placed in the body where the ad unit should appear. 
-       Since you only provided the scripts to go in the <head>, I've added the necessary script tags here, 
-       but you may need to add: <script type="text/javascript" src="//www.highperformanceformat.com/2ca3c18e46200bae5a4b71354503e56b/invoke.js"></script>
-       in the body where you want the ad unit to display. -->
-    <script type="text/javascript" src="//www.highperformanceformat.com/2ca3c18e46200bae5a4b71354503e56b/invoke.js"></script>
+    <!-- Adsterra Ad Script (Banner/Native Code) -->
+    <script async="async" data-cfasync="false" src="//pl28010970.effectivegatecpm.com/6ef7d747884a1184f4736d7ecff2f631/invoke.js"></script>
+    
+    <!-- Adsterra Ad Script -->
+    <script type='text/javascript' src='//pl28010977.effectivegatecpm.com/9a/2a/94/9a2a942d3b63dcb9ceca8278f350f2a2.js'></script>
 
+    <!-- Ad Script (From provided URL) -->
+    <script type='text/javascript' src='//www.effectivegatecpm.com/s5iuf1djt4?key=3b5a0211ee202edf9f14d809609ce43a'></script>
+    <!-- ==================================================================== -->
+    
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Load Lucide Icons -->
@@ -107,10 +104,17 @@
         .bg-f-dark { background-color: #FFFFFF; } /* White panel */
     </style>
 </head>
-<body class="min-h-screen p-4 sm:p-8 flex items-center justify-center">
+<!-- UPDATED: Added flex-col to force vertical stacking of elements (ads and card) -->
+<body class="min-h-screen p-4 sm:p-8 flex flex-col items-center">
 
     <!-- THREE.js Canvas Element -->
     <canvas id="threeCanvas"></canvas>
+
+    <!-- TOP AD: Adsterra Ad Unit Container (Banner Placement) -->
+    <div class="w-full max-w-5xl mb-4 p-2 text-center rounded-lg bg-gray-100 shadow-inner border border-gray-300">
+        <div id="container-6ef7d747884a1184f4736d7ecff2f631"></div>
+        <p class="text-xs text-gray-400 mt-1">Advertisement</p>
+    </div>
 
     <div class="w-full max-w-5xl p-6 sm:p-10 rounded-xl card space-y-8">
         
@@ -225,7 +229,7 @@
                     <h2 class="text-xl font-bold text-f-light border-b border-gray-300 pb-2">
                         <i data-lucide="book-open" class="w-6 h-6 inline-block mr-2 text-indigo-600"></i>
                         Execute Workbook Query
-                    </h2>
+                    </h2 >
                     <p id="contextMessage" class="text-md text-gray-600 font-medium">
                         Enter the **Course Code** below to load lab documents for the selected semester.
                     </p>
@@ -268,6 +272,42 @@
             </div>
         </div>
     </div>
+    
+    <!-- ==================================================================== -->
+    <!-- DOWN ADS: Ad Units Moved to BODY for Proper Rendering -->
+    <!-- ==================================================================== -->
+
+    <!-- High Performance Ad 1 (key: 2ca3c18e46200bae5a4b71354503e56b) -->
+    <div class="w-full max-w-5xl text-center mx-auto mt-4 mb-4">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : '2ca3c18e46200bae5a4b71354503e56b',
+                'format' : 'iframe',
+                'height' : 300,
+                'width' : 160,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/2ca3c18e46200bae5a4b71354503e56b/invoke.js"></script>
+        <p class="text-xs text-gray-400 mt-1">Advertisement 1</p>
+    </div>
+
+    <!-- High Performance Ad 2 (key: e02fdc0e6ee0c05d64741a5b337ebbe5) -->
+    <div class="w-full max-w-5xl text-center mx-auto mt-4 mb-8">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : 'e02fdc0e6ee0c05d64741a5b337ebbe5',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/e02fdc0e6ee0c05d64741a5b337ebbe5/invoke.js"></script>
+        <p class="text-xs text-gray-400 mt-1">Advertisement 2</p>
+    </div>
+    <!-- ==================================================================== -->
+
 
     <!-- Initialization of Lucide Icons -->
     <script>
